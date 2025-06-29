@@ -14,29 +14,41 @@ func main() {
 	var amount float64
 	var valutaIn, valutaTo string
 
-	fmt.Print("Выберите исходнкю валюту для конвертации: USD, EUR, RUB: ")
-	fmt.Scan(&valutaIn)
-	ishodValuta, err := proverkaValuti(valutaIn)
 	for {
+		fmt.Print("Выберите исходнкю валюту для конвертации: USD, EUR, RUB: ")
+		fmt.Scan(&valutaIn)
+		ishodValuta, err := proverkaValuti(valutaIn)
+
 		if err != nil {
 			fmt.Println("Неправильно указана исходная валюта: ", valutaIn)
+			continue
+		}
+
+		for {
+			fmt.Print("Введите сумму для конвертации: ")
+			n, err := fmt.Scan(&amount) // проверяем колличество введеных аргументов n
+			if err != nil || n != 1 {
+				fmt.Println("Ошибка ввода. Пожалуйста, введите число.")
+				var discard string
+				fmt.Scanln(&discard) // очищаем остаток строки
+				continue
+			}
+			if amount < 0 {
+				fmt.Println("Сумма не может быть отрицательной.")
+				continue
+			}
 			break
 		}
 
-		fmt.Println("Введите сумму для конвертации: ")
-		fmt.Scan(&amount)
-		summa, err := proverkaAmount(amount)
-		if err != nil {
-			fmt.Println("Неправильно указана сумма: ", summa)
-			break
-		}
-
-		valutaVibor1, valutaVibor2 := viborValuti(ishodValuta)
-		fmt.Println("Выберите целевую валюту для конвертации: ", valutaVibor1, "/", valutaVibor2)
-		fmt.Scan(&valutaTo)
-		vibor, err := proverkaValuti(valutaTo)
-		if err != nil {
-			fmt.Println("Неправильно указана целевая валюта: ", vibor)
+		for {
+			valutaVibor1, valutaVibor2 := viborValuti(ishodValuta)
+			fmt.Println("Выберите целевую валюту для конвертации: ", valutaVibor1, "/", valutaVibor2)
+			fmt.Scan(&valutaTo)
+			vibor, err := proverkaValuti(valutaTo)
+			if err != nil {
+				fmt.Println("Неправильно указана целевая валюта: ", vibor)
+				continue
+			}
 			break
 		}
 
@@ -63,11 +75,11 @@ func convert(amount float64, from string, to string) float64 {
 	case from == "RUB" && to == "USD":
 		return amount / usdToRub
 	case from == "EUR" && to == "RUB":
-		return amount * (usdToRub / usdToEuro)
+		return amount * euroToRub
 	case from == "RUB" && to == "EUR":
 		return amount / euroToRub
 	default:
-		return 0
+		return amount
 	}
 }
 
@@ -88,11 +100,4 @@ func proverkaValuti(valuta string) (string, error) {
 	} else {
 		return valuta, nil
 	}
-}
-
-func proverkaAmount(amount float64) (float64, error) {
-	if amount < 0 {
-		return amount, errors.New("no_params_error")
-	}
-	return amount, nil
 }
